@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.kbn</groupId>
+    <artifactId>jyexcel</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>jyexcellibrary</name>
+    <description>A Robot Framework test library for handling excel using Jython</description>
+    <url>https://github.com/badari412/JyExcelLibrary</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans -->
+        <dependency>
+            <groupId>org.apache.xmlbeans</groupId>
+            <artifactId>xmlbeans</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.robotframework/javalib-core -->
+        <dependency>
+            <groupId>org.robotframework</groupId>
+            <artifactId>javalib-core</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.17</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.17</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.poi/ooxml-schemas -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>ooxml-schemas</artifactId>
+            <version>1.3</version>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/org.robotframework/robotframework -->
+        <dependency>
+            <groupId>org.robotframework</groupId>
+            <artifactId>robotframework</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <directory>${project.basedir}/target with spaces</directory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Spec.java</include>
+                        <include>**/*Test.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.robotframework</groupId>
+                <artifactId>robotframework-maven-plugin</artifactId>
+                <version>1.4.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>acceptance-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>xml-spec</id>
+                        <phase>integration-test</phase>
+                        <goals><goal>libdoc</goal></goals>
+                        <configuration>
+                            <libdoc>
+                                <version>${project.version}</version>
+                                <outputFile>JyExcelLibrary-${project.version}.xml</outputFile>
+                                <extraPathDirectories>
+                                    <extraPathDirectory>${project.build.directory}/jyexcellibrary-${project.version}.jar</extraPathDirectory>
+                                </extraPathDirectories>
+                                <libraryOrResourceFile>JyExcelLibrary</libraryOrResourceFile>
+                            </libdoc>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>html-doc</id>
+                        <phase>integration-test</phase>
+                        <goals><goal>libdoc</goal></goals>
+                    </execution>
+                </executions>
+                <!--<configuration>-->
+                    <!--<testCasesDirectory>${project.basedir}/src/test/resources/robot-tests</testCasesDirectory>-->
+                    <!--<logLevel>DEBUG</logLevel>-->
+                    <!--<nonCriticalTags>-->
+                        <!--<nonCriticalTag>non-critical</nonCriticalTag>-->
+                    <!--</nonCriticalTags>-->
+                    <!--<libdoc>-->
+                        <!--<version>${project.version}</version>-->
+                        <!--<outputFile>JyExcelLibrary-${project.version}.html</outputFile>-->
+                        <!--<extraPathDirectories>-->
+                            <!--<extraPathDirectory>${project.build.directory}/jyexcellibrary-${project.version}.jar</extraPathDirectory>-->
+                        <!--</extraPathDirectories>-->
+                        <!--<libraryOrResourceFile>JyExcelLibrary</libraryOrResourceFile>-->
+                    <!--</libdoc>-->
+                <!--</configuration>-->
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>jarjar-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jarjar</goal>
+                        </goals>
+                        <configuration>
+                            <output>${project.build.directory}/with-dependencies/jyexcellibrary-${project.version}.jar</output>
+                            <includes>
+                                <include>org.apache.poi:poi</include>
+                                <include>org.apache.poi:poi-ooxml</include>
+                                <include>org.apache.poi:ooxml-schemas</include>
+                                <include>org.apache.xmlbeans:xmlbeans</include>
+                                <include>org.robotframework:javalib-core</include>
+                                <include>org.apache.commons:commons-collections4</include>
+
+
+
+
+                            </includes>
+                            <rules>
+                                <rule>
+                                    <pattern>org.apache.**</pattern>
+                                    <result>org.robotframework.@0</result>
+                                </rule>
+                                <rule>
+                                    <pattern>org.apache.commons.collections.**</pattern>
+                                    <result>org.robotframework.@0</result>
+                                </rule>
+                                <keep>
+                                    <pattern>org.robotframework.**</pattern>
+                                </keep>
+                                <keep>
+                                    <pattern>JyExcelLibrary</pattern>
+                                </keep>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <projectsDirectory>src/it</projectsDirectory>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                    <pomIncludes>
+                        <pomInclude>*/pom.xml</pomInclude>
+                    </pomIncludes>
+                    <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
