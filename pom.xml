@@ -6,7 +6,7 @@
 
     <groupId>com.kbn</groupId>
     <artifactId>jyexcel</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
     <name>jyexcellibrary</name>
     <description>A Robot Framework test library for handling excel using Jython</description>
@@ -127,21 +127,17 @@
                         <goals><goal>libdoc</goal></goals>
                     </execution>
                 </executions>
-                <!--<configuration>-->
-                    <!--<testCasesDirectory>${project.basedir}/src/test/resources/robot-tests</testCasesDirectory>-->
-                    <!--<logLevel>DEBUG</logLevel>-->
-                    <!--<nonCriticalTags>-->
-                        <!--<nonCriticalTag>non-critical</nonCriticalTag>-->
-                    <!--</nonCriticalTags>-->
-                    <!--<libdoc>-->
-                        <!--<version>${project.version}</version>-->
-                        <!--<outputFile>JyExcelLibrary-${project.version}.html</outputFile>-->
-                        <!--<extraPathDirectories>-->
-                            <!--<extraPathDirectory>${project.build.directory}/jyexcellibrary-${project.version}.jar</extraPathDirectory>-->
-                        <!--</extraPathDirectories>-->
-                        <!--<libraryOrResourceFile>JyExcelLibrary</libraryOrResourceFile>-->
-                    <!--</libdoc>-->
-                <!--</configuration>-->
+                <configuration>
+                    <testdoc></testdoc>
+                    <libdoc>
+                        <version>${project.version}</version>
+                        <outputFile>JyExcelLibrary-${project.version}.html</outputFile>
+                        <extraPathDirectories>
+                            <extraPathDirectory>${project.build.directory}/jyexcellibrary-${project.version}.jar</extraPathDirectory>
+                        </extraPathDirectories>
+                        <libraryOrResourceFile>JyExcelLibrary</libraryOrResourceFile>
+                    </libdoc>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
@@ -160,21 +156,16 @@
                                 <include>org.apache.poi:poi-ooxml</include>
                                 <include>org.apache.poi:ooxml-schemas</include>
                                 <include>org.apache.xmlbeans:xmlbeans</include>
-                                <include>org.robotframework:javalib-core</include>
                                 <include>org.apache.commons:commons-collections4</include>
-
-
-
-
                             </includes>
                             <rules>
                                 <rule>
                                     <pattern>org.apache.**</pattern>
-                                    <result>org.robotframework.@0</result>
+                                    <result>com.kbn.@0</result>
                                 </rule>
                                 <rule>
                                     <pattern>org.apache.commons.collections.**</pattern>
-                                    <result>org.robotframework.@0</result>
+                                    <result>com.kbn.@0</result>
                                 </rule>
                                 <keep>
                                     <pattern>org.robotframework.**</pattern>
