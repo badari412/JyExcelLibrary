@@ -1,0 +1,29 @@
+JyExcelLibrary is a robotframework library which helps to interact with excel sheets using jython. Currently you can
+perform the following READ operations on excel:
+
+    1) Open Excel
+    2) Get Number Of Sheets
+    3) Get Sheet Names
+    4) Get Row Count
+    5) Get Column Count
+    6) Get Row Values
+    7) Get Column Values
+    8) Get Cell Data
+    9) Select Sheet
+
+In future releases, support will be added to do WRITE operations as well.
+
+Current limitations:
+
+    1) Only .xlsx format is supported.
+    2) You cannot use this libray with python.
+    3) No WRITE operations.
+
+There's an alpha release, but still you can try it and let us know if you come across any issues. This is ready enough
+to do all the read operations.
+
+
+How to use:
+
+Add JyExcelLibrary to Jython's classpath and import JyExcelLibrary.xml in RIDE. That's it! You can find the latest
+release, keywords documentation under "Releases" tab.
