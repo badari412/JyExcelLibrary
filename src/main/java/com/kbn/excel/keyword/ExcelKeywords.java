@@ -16,27 +16,27 @@
 
 package com.kbn.excel.keyword;
 
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.robotframework.javalib.annotation.ArgumentNames;
 import org.robotframework.javalib.annotation.RobotKeyword;
 import org.robotframework.javalib.annotation.RobotKeywords;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 
 
 @RobotKeywords
 public class ExcelKeywords {
 
-    XSSFWorkbook wb;
-    XSSFSheet sheet;
+    private InputStream fileInputStream;
+    private OutputStream fileOutputStream;
+    private Workbook wb;
+    private Sheet sheet;
+    private String excelFilePath;
 
 
     @RobotKeyword("Open the excel file using the given path.\n\n" +
@@ -45,16 +45,8 @@ public class ExcelKeywords {
             "\n")
     @ArgumentNames({"excelFilePath"})
     public void openExcel(String excelFilePath) {
-        try {
-            InputStream fileToRead = new FileInputStream(excelFilePath);
-            wb = new XSSFWorkbook(fileToRead);
-            sheet = wb.getSheetAt(0);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Loading file " + excelFilePath);
+        this.excelFilePath = excelFilePath.trim();
+        openFileToRead();
     }
 
 
@@ -76,22 +68,19 @@ public class ExcelKeywords {
     @ArgumentNames({"rowNumber", "colNumber"})
     public String getCellData(int rowNumber, int colNumber) {
 
-        XSSFRow row;
-        XSSFCell cell;
-
+        Row row;
+        Cell cell;
+        DataFormatter dataFormatter = new DataFormatter();
+        FormulaEvaluator formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
         row = sheet.getRow(rowNumber);
 
         cell = row.getCell(colNumber);
-        if (cell == null) return "";
-        CellType cellType = cell.getCellTypeEnum();
-        switch (cellType) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                return String.valueOf(cell.getNumericCellValue());
+        if (cell == null) {
+            return "";
+        } else {
+            return dataFormatter.formatCellValue(cell, formulaEvaluator);
         }
 
-        return "";
     }
 
 
@@ -125,14 +114,12 @@ public class ExcelKeywords {
     @ArgumentNames({"colNumber", "includeEmptyCells"})
     public String[] getColumnValues(int colNumber, boolean includeEmptyCells) {
         int rowCount = Integer.valueOf(getRowCount());
-        ArrayList<String> colValues = new ArrayList<String>();
+        ArrayList<String> colValues = new ArrayList<>();
 
-        String data = "";
+        String data;
         for (int i = 0; i < rowCount; i++) {
             data = getCellData(i, colNumber);
-            if (!includeEmptyCells && data.equals((""))) {
-                continue;
-            } else {
+            if (!(!includeEmptyCells && data.equals(""))) {
                 colValues.add(data);
             }
         }
@@ -160,18 +147,18 @@ public class ExcelKeywords {
     @ArgumentNames({"rowNumber", "includeEmptyCells"})
     public String[] getRowValues(int rowNumber, boolean includeEmptyCells) {
 
-        XSSFRow row = sheet.getRow(rowNumber);
-        ArrayList<String> rowValues = new ArrayList<String>();
+        ArrayList<String> rowValues = new ArrayList<>();
         int colCount = Integer.parseInt(getColumnCount());
-        String data = "";
+        String data;
 
         for (int i = 0; i < colCount; i++) {
             data = getCellData(rowNumber, i);
+
             if (!includeEmptyCells && data.equals("")) {
                 continue;
-            } else {
-                rowValues.add(data);
             }
+            rowValues.add(data);
+
 
         }
 
@@ -189,12 +176,191 @@ public class ExcelKeywords {
     public String[] getSheetNames() {
 
         int noOfSheets = Integer.parseInt(getNumberOfSheets());
-        ArrayList<String> sheetNames = new ArrayList<String>();
+        ArrayList<String> sheetNames = new ArrayList<>();
         for (int i = 0; i < noOfSheets; i++) {
             sheetNames.add(wb.getSheetName(i));
         }
 
         return sheetNames.toArray(new String[sheetNames.size()]);
+    }
+
+    @RobotKeyword("Add a new sheet to the currently opened excel.\n\n" +
+            "Example:\n" +
+            "| Add New Sheet | Sheet2 |\n" +
+            "\n")
+    @ArgumentNames({"name"})
+    public void addNewSheet(String name) throws IOException {
+
+        wb.createSheet(name);
+        openFileToWrite();
+
+
+    }
+
+    @RobotKeyword("Sets the value of the cell in the active sheet with a number.\n\n" +
+            "Example:\n" +
+            "| Set Cell Value With Number | 34 | 1 | 2 |\n" +
+            "| Set Cell Value With Number | 34.3 | 1 | 2 |\n" +
+            "| Set Cell Value With Number | 34.59 | 1 | 2 |\n" +
+            "\n")
+    @ArgumentNames({"number", "rowNumber", "columnNumber"})
+    public void setCellValueWithNumber(double number, int rowNumber, int columnNumber) {
+
+        Cell cell = getCell(rowNumber, columnNumber);
+        cell.setCellType(CellType.NUMERIC);
+        cell.setCellValue(number);
+
+        openFileToWrite();
+
+    }
+
+
+    @RobotKeyword("Sets the value of the cell in the active sheet with a string.\n\n" +
+            "Example:\n" +
+            "| Set Cell Value With String | dummy | 1 | 2 |\n" +
+            "\n")
+    @ArgumentNames({"string", "rowNumber", "columnNumber"})
+    public void setCellValueWithString(String string, int rowNumber, int columnNumber) {
+
+        Cell cell = getCell(rowNumber, columnNumber);
+        cell.setCellType(CellType.STRING);
+        cell.setCellValue(string);
+
+        openFileToWrite();
+
+    }
+
+
+    @RobotKeyword("Sets the value of the cell in the active sheet with a formula.\n\n" +
+            "Example:\n" +
+            "| Set Cell Value With Formula | SUM(F1,G1) | 1 | 2 |\n" +
+            "\n")
+    @ArgumentNames({"string", "rowNumber", "columnNumber"})
+
+    public void setCellValueWithFormula(String formula, int rowNumber, int columnNumber) {
+        Cell cell = getCell(rowNumber, columnNumber);
+        cell.setCellType(CellType.FORMULA);
+        cell.setCellFormula(formula);
+        openFileToWrite();
+
+    }
+
+    @RobotKeyword("Removes the given sheet from the active workbook.\n\n" +
+            "Example:\n" +
+            "| Remove Sheet | TC_2 |\n" +
+            "\n")
+    @ArgumentNames({"string"})
+    public void removeSheet(String sheetName) {
+        wb.removeSheetAt(wb.getSheetIndex(sheetName));
+        openFileToWrite();
+    }
+
+
+    @RobotKeyword("Sets the value of the cell in the active sheet with a boolean value.\n\n" +
+            "Example:\n" +
+            "| Set Cell Value With Boolean | true | 1 | 2 |\n" +
+            "\n")
+    @ArgumentNames({"string", "rowNumber", "columnNumber"})
+    public void setCellValueWithBoolean(String booleanValue, int rowNumber, int columnNumber) {
+        Cell cell = getCell(rowNumber, columnNumber);
+        cell.setCellType(CellType.BOOLEAN);
+        cell.setCellValue(booleanValue);
+        openFileToWrite();
+
+    }
+
+    @RobotKeyword("Removes the value from the given cell in the active sheet.\n\n" +
+            "Example:\n" +
+            "| Remove Cell Value | 1 | 2 |\n" +
+            "\n")
+    @ArgumentNames({"rowNumber", "columnNumber"})
+    public void removeCellValue(int rowNumber, int columnNumber) {
+        Cell cell = getCell(rowNumber, columnNumber);
+        cell.setCellType(CellType.BLANK);
+        cell.setCellValue("");
+        openFileToWrite();
+
+    }
+
+
+    private Cell getCell(int rowNumber, int columnNumber) {
+        Row row = sheet.getRow(rowNumber);
+        Cell cell;
+        if (row == null) {
+            row = sheet.createRow(rowNumber);
+        }
+
+        cell = row.getCell(columnNumber);
+        if (cell == null) {
+            cell = row.createCell(columnNumber);
+        }
+        return cell;
+    }
+
+    @RobotKeyword("Creates a new excel workbook with the given name.\n\n" +
+            "Example:\n" +
+            "| Create Workbook | C:\\Demo.xlsx |\n" +
+            "| Create Workbook | C:\\Demo.xls |\n" +
+            "\n")
+    @ArgumentNames({"rowNumber", "columnNumber"})
+    public void createWorkBook(String excelFilePath) throws InvalidFormatException {
+        this.excelFilePath = excelFilePath;
+        Workbook newWb;
+
+        if (excelFilePath.endsWith(".xlsx")) {
+            newWb = new XSSFWorkbook();
+        } else if (excelFilePath.endsWith(".xls")) {
+            newWb = new HSSFWorkbook();
+        } else {
+            throw new InvalidFormatException("Please make sure you use either .xlsx or .xls format.");
+        }
+
+
+        newWb.createSheet("Sheet1");
+
+        try {
+            FileOutputStream newFOStream = new FileOutputStream(excelFilePath);
+            newWb.write(newFOStream);
+            newFOStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void openFileToRead() {
+
+        try {
+            fileInputStream = new FileInputStream(excelFilePath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            wb = WorkbookFactory.create(fileInputStream);
+        } catch (IOException | InvalidFormatException e) {
+            e.printStackTrace();
+        }
+        sheet = wb.getSheetAt(0);
+    }
+
+    private void openFileToWrite() {
+
+        try {
+            fileOutputStream = new FileOutputStream(excelFilePath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            wb.write(fileOutputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            fileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
