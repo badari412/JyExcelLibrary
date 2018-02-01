@@ -31,8 +31,8 @@ public class JyExcelLibrary implements KeywordDocumentationRepository, RobotJava
     private final AnnotationLibrary annotationLibrary = new AnnotationLibrary(
             "com/kbn/excel/keyword/**.class");
     private static final String LIBRARY_DOCUMENTATION = "JyExcelLibrary is a Robot Framework test library for handling excel sheets using Jython.\n"+
-            "Currently it supports .xlsx format only. This cannot be used with python.\n" +
-            "Write operations on excel will be added in future releases.";
+            "It supports both .xlsx and .xls formats. This cannot be used with python.\n";
+
     public JyExcelLibrary() {
         this(Collections.<String> emptyList());
     }
